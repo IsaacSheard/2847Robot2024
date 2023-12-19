@@ -9,19 +9,15 @@ import java.util.List;
 
 
 import com.ctre.phoenix6.hardware.Pigeon2;
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.AutoBuilder;
-// import com.pathplanner.lib.PathConstraints;
-// import com.pathplanner.lib.PathPlanner;
-// import com.pathplanner.lib.PathPlannerTrajectory;
-// import com.pathplanner.lib.PathPoint;
-// import com.pathplanner.lib.auto.AutoBuilder;
-// import com.pathplanner.lib.auto.NamedCommands;
-// import com.pathplanner.lib.auto.PIDConstants;
-// import com.pathplanner.lib.auto.SwerveAutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathConstraints;
-import com.pathplanner.lib.path.PathPlannerTrajectory;
-import com.pathplanner.lib.util.PIDConstants;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -76,7 +72,7 @@ import frc.robot.subsystems.LimeLightSubsystem;
  * (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  //private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> autoChooser;
 
     // The robot's subsystems
     private final DriveSubsystem m_robotDrive = new DriveSubsystem();
@@ -84,7 +80,6 @@ public class RobotContainer {
     private final ArmExtendSubsystem m_armExtend = new ArmExtendSubsystem();
     private final ClawSubsystem m_claw = new ClawSubsystem();
     // private final SensorSubsystem m_sensor = new SensorSubsystem();
-    private final SendableChooser<Integer> m_autoChooser = new SendableChooser<>();
 
     private final Pigeon2 m_gyro = new Pigeon2(11);
     private final  HashMap<String, Command> m_eventMap = new HashMap<>();
@@ -125,19 +120,40 @@ public class RobotContainer {
                         m_robotDrive));
 
          m_arm.setDefaultCommand(new DefaultArmCommand(m_arm, m_driverController));  // makes it go to 0
-       //  m_arm.setDefaultCommand(new DefaultArmCommand(m_arm, m_driverController));  // makes it go to 0
 
-        m_autoChooser.addOption("CubeConeScoreParallel", 1);
-        m_autoChooser.addOption("BottomCubeConeScoreParalel", 2);
-        m_autoChooser.addOption("SCubeConeScoreParallel", 3);
-        m_autoChooser.addOption("CubeScoreMiddle", 4);
-        m_autoChooser.addOption("StationBottomCubeConeScoreParallel", 5);
-        m_autoChooser.addOption("BottomCubeScoreOut", 6);
-        m_autoChooser.addOption("CubeScoreCharge", 7);
-        m_autoChooser.addOption("ExCubeConeScoreParallel", 8);
+    autoChooser = AutoBuilder.buildAutoChooser();
 
 
-        SmartDashboard.putData("Autonomous Routine", m_autoChooser);
+
+        // m_autoChooser.addOption("CubeConeScoreParallel", 1);
+        // m_autoChooser.addOption("BottomCubeConeScoreParalel", 2);
+        // m_autoChooser.addOption("SCubeConeScoreParallel", 3);
+        // m_autoChooser.addOption("CubeScoreMiddle", 4);
+        // m_autoChooser.addOption("StationBottomCubeConeScoreParallel", 5);
+        // m_autoChooser.addOption("BottomCubeScoreOut", 6);
+        // m_autoChooser.addOption("CubeScoreCharge", 7);
+        // m_autoChooser.addOption("ExCubeConeScoreParallel", 8);
+
+
+        SmartDashboard.putData("Autonomous Routine", autoChooser);
+
+NamedCommands.registerCommand("straight", new InstantCommand(
+            () -> m_robotDrive.setStraight(),
+            m_robotDrive));
+NamedCommands.registerCommand("allignWheels", allignWheels());
+NamedCommands.registerCommand("score", new MoveArmHighToDropConePositionCommand(m_arm));
+NamedCommands.registerCommand("extend", extendWithReleaseCommand(false));
+NamedCommands.registerCommand("retract", new ToggleExtendReleaseCommand(m_armExtend));
+NamedCommands.registerCommand("positionClaw", toPickupPositionAndReleaseForAuto());
+NamedCommands.registerCommand("pickup", new GripCommand(m_claw));
+NamedCommands.registerCommand("maintain", new MaintainCommand(m_arm));
+NamedCommands.registerCommand("score1", new MoveArmHighToDropConePositionCommand(m_arm));
+NamedCommands.registerCommand("extendWRelease", extendLowerWithReleaseCommand(true));
+NamedCommands.registerCommand("retract1", new ToggleExtendReleaseCommand(m_armExtend));
+NamedCommands.registerCommand("positionClaw1", new MoveArmToPickUpCommand(m_arm));
+    //m_eventMap.put("lock", new AutoBalance(m_robotDrive));
+NamedCommands.registerCommand("open", new ReleaseCommand(m_claw));
+NamedCommands.registerCommand("maintainPickup", maintainPickup());
 
 
     m_eventMap.put("straight", new InstantCommand(
@@ -154,14 +170,14 @@ public class RobotContainer {
     m_eventMap.put("extendWRelease", extendLowerWithReleaseCommand(true));
     m_eventMap.put("retract1", new ToggleExtendReleaseCommand(m_armExtend));
     m_eventMap.put("positionClaw1", new MoveArmToPickUpCommand(m_arm));
-    m_eventMap.put("lock", new AutoBalance(m_robotDrive));
+    //m_eventMap.put("lock", new AutoBalance(m_robotDrive));
     m_eventMap.put("open", new ReleaseCommand(m_claw));
     m_eventMap.put("maintainPickup", maintainPickup());
 
 
-//     m_bottomCubeScoreOut = BottomCubeScoreOut();
-//     m_excubeConeScoreParallel = ExCubeConeScoreParallel();
-//     m_cubeScoreMiddle = CubeScoreMiddle();
+    // m_bottomCubeScoreOut = BottomCubeScoreOut();
+    // m_excubeConeScoreParallel = ExCubeConeScoreParallel();
+    // m_cubeScoreMiddle = CubeScoreMiddle();
 
 
     }
@@ -208,9 +224,9 @@ public class RobotContainer {
         new JoystickButton(m_driverController, Button.kA.value)
                 .whileTrue(toScoreHigh());
 
-        // new JoystickButton(m_driverController, Button.kY.value)
-        //         .whileTrue(new RetractCommand(m_armExtend))
-        //         .onFalse(new StopArmCommand(m_arm));
+        new JoystickButton(m_driverController, Button.kY.value)
+                .whileTrue(new RetractCommand(m_armExtend))
+                .onFalse(new StopArmCommand(m_arm));
 
          new JoystickButton(m_driverController, Button.kB.value)
                 .whileTrue(new ExtendCommand(m_armExtend))
@@ -234,11 +250,11 @@ public class RobotContainer {
 
 
 
-        //     new JoystickButton(m_driverController1, Button.kA.value)
-        //     .whileTrue(AllignSensors());
+            // new JoystickButton(m_driverController1, Button.kA.value)
+            // .whileTrue(AllignSensors());
 
-        //     new JoystickButton(m_driverController1, Button.kX.value)
-        //     .whileTrue(AllignSensorsDist());
+            // new JoystickButton(m_driverController1, Button.kX.value)
+            // .whileTrue(AllignSensorsDist());
 
         // new JoystickButton(m_driverController1, Button.kB.value)
         //     //.onTrue(toScorePositionCommand(true));//nee the addrequirements so that m_drive can take control
@@ -249,65 +265,68 @@ public class RobotContainer {
 
     }
 
-//     public Command getAutonomousCommand() {
-//         switch (m_autoChooser.getSelected()) {
-//             case 1:
-//                 return CubeConeScoreParallel();
-//             case 2:
-//                 return BottomCubeConeScoreParallel();
-//             case 3:
-//                 return SCubeConeScoreParallel();
-//             case 4:
-//                 return m_cubeScoreMiddle;
-//             case 5:
-//                 return StationBottomCubeConeScoreParallel();
-//             case 6:
-//                 return m_bottomCubeScoreOut;
-//             case 7:
-//                 return CubeScoreCharge();
-//             case 8:
-//                 return m_excubeConeScoreParallel;
+    public Command getAutonomousCommand() {
+      
+     // return new PathPlannerAuto("CubeConeScoreParallel");//NEW STUFF
+      return autoChooser.getSelected();
 
-//         }
+        // switch (m_autoChooser.getSelected()) {
+        //     case 1:
+        //         return CubeConeScoreParallel();
+        //     case 2:
+        //         return BottomCubeConeScoreParallel();
+        //     case 3:
+        //         return SCubeConeScoreParallel();
+        //     case 4:
+        //         return m_cubeScoreMiddle;
+        //     case 5:
+        //         return StationBottomCubeConeScoreParallel();
+        //     case 6:
+        //         return m_bottomCubeScoreOut;
+        //     case 7:
+        //         return CubeScoreCharge();
+        //     case 8:
+        //         return m_excubeConeScoreParallel;
 
-//         return null;
-   // }
+        // }
 
-    //private Command AutoBuilder(String pathName) {
-        // This will load the file "FullAuto.path" and generate it with a max velocity
-        // of 4 m/s and a max acceleration of 3 m/s^2
-        // for every path in the group
+        // return null;
+    }
 
-        // List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(pathName, new PathConstraints(3, 2));
+    // private Command AutoBuilder(String pathName) {
+    //     // This will load the file "FullAuto.path" and generate it with a max velocity
+    //     // of 4 m/s and a max acceleration of 3 m/s^2
+    //     // for every path in the group
+
+    //     List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup(pathName, new PathConstraints(3, 2));
 
 
-        // // Create the AutoBuilder. This only needs to be created once when robot code
-        // // starts, not every time you want to create an auto command. A good place to
-        // // put this is in RobotContainer along with your subsystems.
-        // SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
-        //         () -> m_robotDrive.getPose(),
-        //         (p) -> m_robotDrive.resetOdometry(p), // Pose2d consumer, used to reset odometry at the beginning of
-        //                                               // auto
-        //         DriveConstants.kDriveKinematics, // SwerveDriveKinematics
-        //         new PIDConstants(5, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
-        //                                        // and Y
-        //                                        // PID controllers)
-        //         new PIDConstants(7, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
-        //                                        // rotation
-        //                                        // controller)
-        //         (s) -> m_robotDrive.setModuleStates(s), // Module states consumer used to output to the drive subsystem
-        //         m_eventMap,
-        //         true, // Should the path be automatically mirrored depending on alliance color.
-        //               // Optional, defaults to true
-        //         m_robotDrive // The drive subsystem. Used to properly set the requirements of path following
-        //                      // commands
-        // );
+    //     // Create the AutoBuilder. This only needs to be created once when robot code
+    //     // starts, not every time you want to create an auto command. A good place to
+    //     // put this is in RobotContainer along with your subsystems.
+    //     SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
+    //             () -> m_robotDrive.getPose(),
+    //             (p) -> m_robotDrive.resetOdometry(p), // Pose2d consumer, used to reset odometry at the beginning of
+    //                                                   // auto
+    //             DriveConstants.kDriveKinematics, // SwerveDriveKinematics
+    //             new PIDConstants(5, 0.0, 0.0), // PID constants to correct for translation error (used to create the X
+    //                                            // and Y
+    //                                            // PID controllers)
+    //             new PIDConstants(7, 0.0, 0.0), // PID constants to correct for rotation error (used to create the
+    //                                            // rotation
+    //                                            // controller)
+    //             (s) -> m_robotDrive.setModuleStates(s), // Module states consumer used to output to the drive subsystem
+    //             m_eventMap,
+    //             true, // Should the path be automatically mirrored depending on alliance color.
+    //                   // Optional, defaults to true
+    //             m_robotDrive // The drive subsystem. Used to properly set the requirements of path following
+    //                          // commands
+    //     );
 
-        // var command = autoBuilder.fullAuto(pathGroup);
+    //     var command = autoBuilder.fullAuto(pathGroup);
 
-        // return command;
-  //  }
-
+    //     return command;
+    // }
 
 
 
