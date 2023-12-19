@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 // import com.pathplanner.lib.PathConstraints;
 // import com.pathplanner.lib.PathPlanner;
 // import com.pathplanner.lib.PathPlannerTrajectory;
@@ -140,23 +141,42 @@ public class RobotContainer {
         SmartDashboard.putData("Autonomous Routine", m_autoChooser);
 
 
-    m_eventMap.put("straight", new InstantCommand(
+   NamedCommands.registerCommand("straight", new InstantCommand(
             () -> m_robotDrive.setStraight(),
             m_robotDrive));
-    m_eventMap.put("allignWheels", allignWheels());
-    m_eventMap.put("score", new MoveArmHighToDropConePositionCommand(m_arm));
-    m_eventMap.put("extend", extendWithReleaseCommand(false));
-    m_eventMap.put("retract", new ToggleExtendReleaseCommand(m_armExtend));
-    m_eventMap.put("positionClaw", toPickupPositionAndReleaseForAuto());
-    m_eventMap.put("pickup", new GripCommand(m_claw));
-    m_eventMap.put("maintain", new MaintainCommand(m_arm));
-    m_eventMap.put("score1", new MoveArmHighToDropConePositionCommand(m_arm));
-    m_eventMap.put("extendWRelease", extendLowerWithReleaseCommand(true));
-    m_eventMap.put("retract1", new ToggleExtendReleaseCommand(m_armExtend));
-    m_eventMap.put("positionClaw1", new MoveArmToPickUpCommand(m_arm));
-    m_eventMap.put("lock", new AutoBalance(m_robotDrive));
-    m_eventMap.put("open", new ReleaseCommand(m_claw));
-    m_eventMap.put("maintainPickup", maintainPickup());
+        NamedCommands.registerCommand("allignWheels", allignWheels());
+        NamedCommands.registerCommand("score", new MoveArmHighToDropConePositionCommand(m_arm));
+        NamedCommands.registerCommand("extend", extendWithReleaseCommand(false));
+        NamedCommands.registerCommand("retract", new ToggleExtendReleaseCommand(m_armExtend));
+        NamedCommands.registerCommand("positionClaw", toPickupPositionAndReleaseForAuto());
+        NamedCommands.registerCommand("pickup", new GripCommand(m_claw));
+        NamedCommands.registerCommand("maintain", new MaintainCommand(m_arm));
+        NamedCommands.registerCommand("score1", new MoveArmHighToDropConePositionCommand(m_arm));
+        NamedCommands.registerCommand("extendWRelease", extendLowerWithReleaseCommand(true));
+        NamedCommands.registerCommand("retract1", new ToggleExtendReleaseCommand(m_armExtend));
+        NamedCommands.registerCommand("positionClaw1", new MoveArmToPickUpCommand(m_arm));
+        NamedCommands.registerCommand("lock", new AutoBalance(m_robotDrive));
+        NamedCommands.registerCommand("open", new ReleaseCommand(m_claw));
+        NamedCommands.registerCommand("maintainPickup", maintainPickup());
+
+        
+//     m_eventMap.put("straight", new InstantCommand(
+//             () -> m_robotDrive.setStraight(),
+//             m_robotDrive));
+//     m_eventMap.put("allignWheels", allignWheels());
+//     m_eventMap.put("score", new MoveArmHighToDropConePositionCommand(m_arm));
+//     m_eventMap.put("extend", extendWithReleaseCommand(false));
+//     m_eventMap.put("retract", new ToggleExtendReleaseCommand(m_armExtend));
+//     m_eventMap.put("positionClaw", toPickupPositionAndReleaseForAuto());
+//     m_eventMap.put("pickup", new GripCommand(m_claw));
+//     m_eventMap.put("maintain", new MaintainCommand(m_arm));                                   NOT SURE IF THIS WILL GET DELETED
+//     m_eventMap.put("score1", new MoveArmHighToDropConePositionCommand(m_arm));
+//     m_eventMap.put("extendWRelease", extendLowerWithReleaseCommand(true));
+//     m_eventMap.put("retract1", new ToggleExtendReleaseCommand(m_armExtend));
+//     m_eventMap.put("positionClaw1", new MoveArmToPickUpCommand(m_arm));
+//     m_eventMap.put("lock", new AutoBalance(m_robotDrive));
+//     m_eventMap.put("open", new ReleaseCommand(m_claw));
+//     m_eventMap.put("maintainPickup", maintainPickup());
 
 
 //     m_bottomCubeScoreOut = BottomCubeScoreOut();
